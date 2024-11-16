@@ -90,8 +90,10 @@ def decide(gameState: GameState) -> List[PlayerAction]:
         death_rate = gameState.config.paths.death_rate
         deat_players = (distance - grace) * death_rate if grace < distance else 0
 
-        if gameState.game.player_count == 2 and get_base_from_id(gameState, nearest_enemy_base_id).player == 3:
-            playeractions_list.append(PlayerAction(base.uid, nearest_enemy_base_id, base.population))
+        if gameState.game.player_count == 2:
+            for a in gameState.bases:
+                if a.player in [3]:
+                    playeractions_list.append(PlayerAction(base.id, a.id, base.population))
 
         max_population = gameState.config.base_levels[base.level].max_population
         population_0_5 = int(0.5 * max_population)
