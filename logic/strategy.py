@@ -80,7 +80,7 @@ def decide(gameState: GameState) -> List[PlayerAction]:
         distances_to_bases = calc_distances_to_bases(gameState, base)
         nearest_enemy_base_id = get_nearest_enemy_base(gameState, distances_to_bases)
         nearest_friend_id = get_nearest_friend_base(gameState, distances_to_bases)
-        if help_bits_needed(gameState, attack_on_bases, nearest_friend_id) + gameState.config.base_levels[get_base_from_id(gameState, nearest_friend_id).level].max_population/2:
+        if nearest_friend_id and help_bits_needed(gameState, attack_on_bases, nearest_friend_id) + gameState.config.base_levels[get_base_from_id(gameState, nearest_friend_id).level].max_population/2:
             nearest_enemy_base_id = nearest_friend_id
         distance = calc_distance(base, get_base_from_id(gameState, nearest_enemy_base_id))
         grace = gameState.config.paths.grace_period
