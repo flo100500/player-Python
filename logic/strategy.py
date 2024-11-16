@@ -137,6 +137,8 @@ def decide(gameState: GameState) -> List[PlayerAction]:
             wanted_player_num = gameState.config.base_levels[our_base.level].max_population/2
             if our_base.population > wanted_player_num  and calc_distance(our_base, min_score_base) <= gameState.config.paths.grace_period:
                 playeractions_list.append(PlayerAction(our_base.uid, min_score_base.uid, our_base.population - wanted_player_num))
+            elif our_base.population > wanted_player_num*1.5 and our_base.level >= len(gameState.config.base_levels):
+                playeractions_list.append(PlayerAction(our_base.uid, min_score_base.uid, our_base.population - wanted_player_num))
             elif our_base.population > wanted_player_num:
                 playeractions_list.append(PlayerAction(our_base.uid, our_base.uid, our_base.population - wanted_player_num))
 
