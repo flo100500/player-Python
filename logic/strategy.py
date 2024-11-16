@@ -35,6 +35,16 @@ def get_nearest_enemy_base(gameState : GameState, distances_to_bases : dict[int,
             current_min = distance
     return base_id_of_current_min
 
+def get_nearest_friend_base(gameState : GameState, distances_to_bases : dict[int,int]) -> int:
+    base_id_of_current_min = 0
+    current_min = 100000
+    for base_id, distance in distances_to_bases.items():
+        base = get_base_from_id(gameState, base_id)
+        if distance < current_min and distance != 0 and base.player == gameState.game.player:
+            base_id_of_current_min = base_id
+            current_min = distance
+    return base_id_of_current_min
+
 def check_for_enemy_attack(gameState:GameState) -> dict[int, tuple[int,int]]:
     attack_on_base_dict : dict[int, tuple[int,int]] = {}
     for action in gameState.actions:
@@ -69,6 +79,9 @@ def decide(gameState: GameState) -> List[PlayerAction]:
             continue
         distances_to_bases = calc_distances_to_bases(gameState, base)
         nearest_enemy_base_id = get_nearest_enemy_base(gameState, distances_to_bases)
+        nearest_friend_id = get_nearest_friend_base(gameState, distances_to_bases)
+        if help_bits_needed(gameState, attack_on_bases, nearest_friend_id) + gameState.config.base_levels[get_base_from_id(gameState, nearest_friend_id).level].max_population/2:
+            nearest_enemy_base_id = nearest_friend_id
         distance = calc_distance(base, get_base_from_id(gameState, nearest_enemy_base_id))
         grace = gameState.config.paths.grace_period
         death_rate = gameState.config.paths.death_rate
