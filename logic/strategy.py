@@ -103,7 +103,7 @@ def decide(gameState: GameState) -> List[PlayerAction]:
 
     targets = []
     i : int = 0
-    while not len(targets):
+    while len(targets) < 4 and i != 100:
         i += 1
         for our_base in our_bases:
             distances_to_bases : dict[int,int] = calc_distances_to_bases(gameState, our_base)
