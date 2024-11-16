@@ -42,14 +42,16 @@ def check_for_enemy_attack(gameState:GameState) -> dict[int, tuple[int,int]]:
             continue
         base : Base = get_base_from_id(gameState, action.dest)
         time_until_attack = action.progress.distance - action.progress.traveled
-        attack_on_base_dict[base.uid] = (action.amount, time_until_attack)
+        if get_base_from_id(gameState, action.src).player == gameState.game.player:
+            attack_on_base_dict[base.uid] = (-action.amount, time_until_attack)
+        else:
+            attack_on_base_dict[base.uid] = (action.amount, time_until_attack)
     return attack_on_base_dict
 
-def help_bits_needed(gamestate: GameState, attack_on_bases_dict:dict, baseuid: int) -> int:
-    base : Base = get_base_from_id(gamestate, baseuid)
+def help_bits_needed(gamestate: GameState, attack_on_bases_dict:dict, base: Base) -> int:
     amount = -base.population
     for attacked_base_id, values in attack_on_bases_dict.items():
-        if attacked_base_id == baseuid:
+        if attacked_base_id == base.id:
             amount += values[0]
     return amount
 
@@ -85,36 +87,36 @@ def calc_angle(a : Position, b : Position) -> float:
 #             continue
         
 
-def decide(gamestate: GameState) -> List[PlayerAction]:
+def decide(gameState: GameState) -> List[PlayerAction]:
     playeractions_list = []
 
-    all_bases = gamestate.bases
+    all_bases = gameState.bases
     our_bases : list[Base] = []
     for base in all_bases:
-        if is_our_base_id(gamestate, base.uid):
+        if is_our_base_id(gameState, base.uid):
             our_bases.append(base)
 
     our_middle = find_middle(our_bases)
 
-    attack_on_bases = check_for_enemy_attack(gamestate)
-    rand_direction = find_rand_direction(gamestate, all_bases, our_bases)
+    attack_on_bases = check_for_enemy_attack(gameState)
+    rand_direction = find_rand_direction(gameState, all_bases, our_bases)
 
     targets = []
     i : int = 0
     while not len(targets):
         i += 1
         for our_base in our_bases:
-            distances_to_bases : dict[int,int] = calc_distances_to_bases(gamestate, our_base)
+            distances_to_bases : dict[int,int] = calc_distances_to_bases(gameState, our_base)
             print(distances_to_bases)
             for base_id, distance in distances_to_bases.items():
-                if distance == i and base_id not in targets and not is_our_base_id(gamestate, base_id):
+                if distance == i and base_id not in targets and not is_our_base_id(gameState, base_id):
                     targets.append(base_id)
 
     min_score_base = None
     for target_id in targets:
         min_score = 100000
         min_score_base = None
-        target : Base = get_base_from_id(gamestate, target_id)
+        target : Base = get_base_from_id(gameState, target_id)
         x = target.position.x - our_middle.x
         y = target.position.y - our_middle.y
         z = target.position.z - our_middle.z
@@ -123,8 +125,19 @@ def decide(gamestate: GameState) -> List[PlayerAction]:
             min_score = score
             min_score_base = target
 
+    remaining_bits : dict[Base:int] = {}
     for our_base in our_bases:
-        if our_base.population > 15:
-            playeractions_list.append(PlayerAction(our_base.uid, min_score_base.uid, 1))
+        remaining_bits[our_base] = -help_bits_needed(gameState, attack_on_bases, our_base) - gameState.config.base_levels[our_base.level].max_population/2
+
+    sum_remaining_bits = sum(remaining_bits.values())
+
+            
+    if sum_remaining_bits > 0:
+        for our_base in our_bases:
+            wanted_player_num = gameState.config.base_levels[our_base.level].max_population/2
+            if our_base.population > wanted_player_num  and calc_distance(our_base, min_score_base) <= gameState.config.paths.grace_period:
+                playeractions_list.append(PlayerAction(our_base.uid, min_score_base.uid, our_base.population - wanted_player_num))
+            elif our_base.population > 15:
+                playeractions_list.append(PlayerAction(our_base.uid, our_base.uid, our_base.population - wanted_player_num))
 
     return playeractions_list
