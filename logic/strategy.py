@@ -52,7 +52,10 @@ def check_for_enemy_attack(gameState:GameState) -> dict[int, tuple[int,int]]:
             continue
         base : Base = get_base_from_id(gameState, action.dest)
         time_until_attack = action.progress.distance - action.progress.traveled
-        attack_on_base_dict[base.uid] = (action.amount, time_until_attack)
+        if action.player == gameState.game.player:
+            attack_on_base_dict[base.uid] = (-action.amount, time_until_attack)
+        else:
+            attack_on_base_dict[base.uid] = (action.amount, time_until_attack)
     return attack_on_base_dict
 
 def help_bits_needed(gamestate: GameState, attack_on_bases_dict:dict, baseuid: int) -> int:
