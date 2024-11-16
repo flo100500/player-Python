@@ -91,7 +91,7 @@ def decide(gamestate: GameState) -> List[PlayerAction]:
     all_bases = gamestate.bases
     our_bases : list[Base] = []
     for base in all_bases:
-        if is_our_base_id(gamestate, base.id):
+        if is_our_base_id(gamestate, base.uid):
             our_bases.append(base)
 
     our_middle = find_middle(our_bases)
@@ -105,18 +105,19 @@ def decide(gamestate: GameState) -> List[PlayerAction]:
         i += 1
         for our_base in our_bases:
             distances_to_bases : dict[int,int] = calc_distances_to_bases(gamestate, our_base)
-            for base_id, distance in distances_to_bases:
-                if distance == i and base_id not in targets and not is_our_base_id(base_id):
+            print(distances_to_bases)
+            for base_id, distance in distances_to_bases.items():
+                if distance == i and base_id not in targets and not is_our_base_id(gamestate, base_id):
                     targets.append(base_id)
 
     min_score_base = None
     for target_id in targets:
         min_score = 100000
         min_score_base = None
-        target : Base = get_base_from_id(target_id)
-        x = target.x - our_middle.x
-        y = target.y - our_middle.y
-        z = target.z - our_middle.z
+        target : Base = get_base_from_id(gamestate, target_id)
+        x = target.position.x - our_middle.x
+        y = target.position.y - our_middle.y
+        z = target.position.z - our_middle.z
         score = target.population + 3 * calc_angle(rand_direction, Position(x,y,z))
         if min_score > score:
             min_score = score

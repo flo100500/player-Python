@@ -16,8 +16,8 @@
     {
       "uid": 1,
       "name": "test",
-      "player": 1001,
-      "population": 2,
+      "player": 1,
+      "population": 16,
       "level": 0,
       "units_until_upgrade": 0,
       "position": {
